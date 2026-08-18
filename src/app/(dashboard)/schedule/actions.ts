@@ -115,6 +115,7 @@ export async function deleteDeadline(id: string) {
 
 export async function logPomodoroSession(input: {
   subject_id: string | null;
+  goal_id: string | null;
   schedule_block_id: string | null;
   started_at: string;
   duration_minutes: number;
@@ -125,4 +126,6 @@ export async function logPomodoroSession(input: {
     .insert({ ...input, user_id: user.id, completed: true });
   if (error) throw new Error(error.message);
   revalidatePath("/schedule");
+  revalidatePath("/today");
+  if (input.goal_id) revalidatePath(`/goals/${input.goal_id}`);
 }

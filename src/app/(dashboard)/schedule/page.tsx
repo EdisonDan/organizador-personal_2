@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ScheduleClient } from "@/components/schedule/schedule-client";
-import type { ScheduleBlock, Subject, Habit, Deadline, PomodoroSession, Profile } from "@/lib/types";
+import type { ScheduleBlock, Subject, Habit, Deadline, PomodoroSession, Profile, Goal } from "@/lib/types";
 
 export const metadata = { title: "Horario · Panel Personal" };
 
@@ -20,6 +20,7 @@ export default async function SchedulePage() {
     { data: deadlines },
     { data: pomodoroToday },
     { data: profile },
+    { data: goals },
   ] = await Promise.all([
     supabase.from("schedule_blocks").select("*").eq("user_id", user!.id).returns<ScheduleBlock[]>(),
     supabase
@@ -49,6 +50,7 @@ export default async function SchedulePage() {
       .gte("started_at", todayStart.toISOString())
       .returns<PomodoroSession[]>(),
     supabase.from("profiles").select("week_start_day").eq("id", user!.id).maybeSingle<Pick<Profile, "week_start_day">>(),
+    supabase.from("goals").select("*").eq("user_id", user!.id).eq("status", "active").returns<Goal[]>(),
   ]);
 
   const subjectsList = subjects ?? [];
@@ -78,6 +80,7 @@ export default async function SchedulePage() {
         blocks={blocks ?? []}
         subjects={subjectsList}
         habits={habits ?? []}
+        goals={goals ?? []}
         deadlines={deadlines ?? []}
         todayPomodoroCount={todayPomodoroCount}
         pomodoroBySubject={pomodoroBySubject}

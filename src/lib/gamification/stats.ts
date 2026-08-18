@@ -54,6 +54,7 @@ export interface ActivityCounts {
   pomodorosCompleted: number;
   topicsCompleted: number;
   notesReviewed: number;
+  promisesCompleted: number;
 }
 
 const POINTS_PER = {
@@ -61,6 +62,7 @@ const POINTS_PER = {
   pomodoro: 3,
   topic: 4,
   reviewedNote: 1,
+  promise: 10,
 };
 
 const POINTS_PER_LEVEL = 100;
@@ -70,7 +72,8 @@ export function calculatePoints(counts: ActivityCounts): number {
     counts.habitsCompleted * POINTS_PER.habit +
     counts.pomodorosCompleted * POINTS_PER.pomodoro +
     counts.topicsCompleted * POINTS_PER.topic +
-    counts.notesReviewed * POINTS_PER.reviewedNote
+    counts.notesReviewed * POINTS_PER.reviewedNote +
+    counts.promisesCompleted * POINTS_PER.promise
   );
 }
 

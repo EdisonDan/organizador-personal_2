@@ -9,7 +9,7 @@ import { PomodoroTimer } from "@/components/schedule/pomodoro-timer";
 import { DeadlineList } from "@/components/schedule/deadline-list";
 import { getWeekDays, timeFromSlotIndex, toDateKey } from "@/lib/schedule/time";
 import type { WeekDay } from "@/lib/schedule/time";
-import type { ScheduleBlock, Subject, Habit, Deadline } from "@/lib/types";
+import type { ScheduleBlock, Subject, Habit, Deadline, Goal } from "@/lib/types";
 
 type ViewMode = "día" | "semana" | "mes";
 
@@ -17,6 +17,7 @@ export function ScheduleClient({
   blocks,
   subjects,
   habits,
+  goals,
   deadlines,
   todayPomodoroCount,
   pomodoroBySubject,
@@ -25,6 +26,7 @@ export function ScheduleClient({
   blocks: ScheduleBlock[];
   subjects: Subject[];
   habits: Habit[];
+  goals: Goal[];
   deadlines: Deadline[];
   todayPomodoroCount: number;
   pomodoroBySubject: { subjectId: string | null; subjectName: string; count: number }[];
@@ -166,6 +168,7 @@ export function ScheduleClient({
         <div className="space-y-6">
           <PomodoroTimer
             subjects={subjects}
+            goals={goals}
             initialTodayCount={todayPomodoroCount}
             initialBySubject={pomodoroBySubject}
           />

@@ -4,6 +4,7 @@ import {
   CalendarClock,
   NotebookPen,
   GraduationCap,
+  Target,
   ArrowRight,
   Plus,
 } from "lucide-react";
@@ -12,7 +13,21 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { DashboardWidgetsGrid } from "@/components/dashboard/dashboard-widgets-grid";
 import { subjectProgress } from "@/lib/subjects/progress";
 import { getPerformanceColor } from "@/lib/habits/color-scale";
-import type { Habit, HabitLog, ScheduleBlock, Subject, SubjectWeek, SubjectTopic, Profile } from "@/lib/types";
+import { calculateGoalProgress } from "@/lib/goals/progress";
+import { generateStudyRecommendations } from "@/lib/goals/recommendations";
+import type {
+  Habit,
+  HabitLog,
+  ScheduleBlock,
+  Subject,
+  SubjectWeek,
+  SubjectTopic,
+  Profile,
+  Goal,
+  GoalSubtopic,
+  GoalTask,
+  GoalReview,
+} from "@/lib/types";
 
 export const metadata = { title: "Hoy · Panel Personal" };
 
@@ -40,6 +55,10 @@ export default async function TodayPage() {
     { data: weeks },
     { data: topics },
     { data: profile },
+    { data: goals },
+    { data: goalSubtopics },
+    { data: goalTasks },
+    { data: goalReviews },
   ] = await Promise.all([
     supabase
       .from("habits")
@@ -85,6 +104,10 @@ export default async function TodayPage() {
       .select("dashboard_widget_order")
       .eq("id", user!.id)
       .maybeSingle<Pick<Profile, "dashboard_widget_order">>(),
+    supabase.from("goals").select("*").eq("user_id", user!.id).order("created_at").returns<Goal[]>(),
+    supabase.from("goal_subtopics").select("*").eq("user_id", user!.id).returns<GoalSubtopic[]>(),
+    supabase.from("goal_tasks").select("*").eq("user_id", user!.id).returns<GoalTask[]>(),
+    supabase.from("goal_reviews").select("*").eq("user_id", user!.id).returns<GoalReview[]>(),
   ]);
 
   const weekToSubject = new Map((weeks ?? []).map((w) => [w.id, w.subject_id]));
@@ -96,12 +119,61 @@ export default async function TodayPage() {
     topicsBySubject.get(subjectId)!.push(topic);
   }
 
+  const subtopicsByGoal = new Map<string, GoalSubtopic[]>();
+  for (const s of goalSubtopics ?? []) {
+    if (!subtopicsByGoal.has(s.goal_id)) subtopicsByGoal.set(s.goal_id, []);
+    subtopicsByGoal.get(s.goal_id)!.push(s);
+  }
+  const tasksByGoal = new Map<string, GoalTask[]>();
+  for (const t of goalTasks ?? []) {
+    if (!tasksByGoal.has(t.goal_id)) tasksByGoal.set(t.goal_id, []);
+    tasksByGoal.get(t.goal_id)!.push(t);
+  }
+  const reviewsBySubtopic = new Map((goalReviews ?? []).map((r) => [r.subtopic_id, r]));
+  const activeGoals = (goals ?? []).filter((g) => g.status === "active");
+  const goalRecommendations = generateStudyRecommendations(goals ?? [], subtopicsByGoal, tasksByGoal, reviewsBySubtopic, 1);
+
   const habitCount = habits?.length ?? 0;
   const completedToday = logsToday?.filter((l) => l.completed).length ?? 0;
   const nextBlock = nextBlocks?.[0] ?? null;
   const subjectCount = subjects?.length ?? 0;
 
   const widgets: Record<string, React.ReactNode> = {
+    goals: (
+      <Card title="Objetivos" href="/goals" icon={Target}>
+        {activeGoals.length === 0 ? (
+          <EmptyState
+            icon={Target}
+            title="Sin objetivos activos"
+            description="Aprender Python, aprender inglés... lo que quieras seguir de cerca."
+            actionLabel="Crear objetivo"
+            actionHref="/goals"
+          />
+        ) : (
+          <div className="space-y-3">
+            {activeGoals.slice(0, 2).map((g) => {
+              const pct = calculateGoalProgress(subtopicsByGoal.get(g.id) ?? [], tasksByGoal.get(g.id) ?? []);
+              return (
+                <div key={g.id} className="space-y-1">
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <span className="truncate text-foreground">{g.title}</span>
+                    <span className="tabular-stat shrink-0 text-xs text-muted-foreground">{pct}%</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: g.color }} />
+                  </div>
+                </div>
+              );
+            })}
+            {goalRecommendations[0] && (
+              <p className="border-t border-border pt-2 text-xs text-muted-foreground">
+                Siguiente: <span className="text-foreground">{goalRecommendations[0].label}</span>
+              </p>
+            )}
+          </div>
+        )}
+      </Card>
+    ),
     habits: (
       <Card title="Hábitos de hoy" href="/habits" icon={Flame}>
         {habitCount === 0 ? (

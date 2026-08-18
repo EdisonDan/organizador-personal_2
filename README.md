@@ -24,6 +24,30 @@ Construida siguiendo `prompt-organizador-personal-app.md` completo, módulo por 
 
 **Datos** — Exportar todo a JSON, importar/restaurar (respeta las llaves foráneas entre tablas), botón de reset con confirmación explícita (escribir "BORRAR"). RLS en las 14 tablas. Estados de carga y error en toda la app.
 
+## Ampliación: Objetivos, Promesas, Personalizar panel y Logros ampliados
+
+Sobre `prompt-unificado-app.md`. Siguiendo el orden que pediste ahí mismo (base de datos completa → Promesas de calentamiento → Objetivos → Personalizar panel → lector de PDF), esta entrega cubre las dos primeras etapas:
+
+- **Base de datos completa** (`0005_goals_promises_panel.sql`): las 8 tablas de Objetivos y Promesas, más las columnas de Personalizar panel — todo de una vez, aunque la interfaz de Objetivos y Personalizar panel todavía no exista. Dos decisiones que confirmaste antes de escribir esto:
+  - `primary_habit_id` en `goals` (para mostrarlo rápido) + tabla `goal_habit_links` para la relación completa con varios hábitos.
+  - Sin tabla `goal_sessions` aparte: se reutilizan `pomodoro_sessions` y `schedule_blocks` con `goal_id`/`goal_subtopic_id` opcionales, mismo patrón que ya usa Materias con `topic_id`.
+- **Promesas, completo**: CRUD con tipo (del año / de cambio / creativa / personal), ideas de apoyo, vínculo opcional a un hábito existente, botón "Cumplida" con confirmación, filtro para ver archivadas/pausadas.
+- **Logros ampliados**: 5 insignias nuevas (primera promesa, 5, 10, promesa del año, promesa creativa) en el mismo sistema que ya existía — se revisan y se desbloquean **al momento** de marcar una promesa como cumplida, no solo la próxima vez que entres a Logros. Cumplir una promesa también suma puntos.
+- **Perfil ampliado**: contador "Promesas cumplidas" y tarjeta "Última promesa cumplida".
+- **Navegación reorganizada**: con Objetivos y Promesas, el menú principal ya son 7 secciones — mucho para la barra inferior de un teléfono. La barra inferior ahora muestra las primeras 4 y un botón "Más" con el resto (incluye Logros, Perfil, Configuración). En escritorio, el sidebar los muestra todos.
+- **Objetivos**: página lista pero marcada como "próxima fase" — es la pieza más grande de las cuatro, sigue en la siguiente entrega.
+
+- **Objetivos, completo**: la pieza más grande de las cuatro.
+  - CRUD con categoría, prioridad, color/ícono, nivel inicial→meta, hábito principal y materia relacionada.
+  - Cada objetivo tiene 9 pestañas: Resumen (con plan de estudio integrado), Subtemas (estado real: no iniciado/entendiendo/practicando/consolidado), Tareas (9 tipos educativos: leer, ver recurso, ejercicios, resumir, active recall, repasar, práctica guiada, mini evaluación, proyecto), Hábitos vinculados (con su consistencia real, no solo el nombre), Sesiones (Pomodoro embebido, preseleccionado a este objetivo), Notas (vincular existente o crear nueva desde ahí), Repasos (repetición espaciada real sobre subtemas, mismo algoritmo que Notas), Recursos, y Estadísticas.
+  - **"Qué estudiar hoy" real**: prioriza repaso vencido → tarea sugerida → siguiente subtema sin empezar, por objetivo, e intercala entre objetivos activos con el mismo algoritmo de Materias — probado con casos de prueba (incluye que un objetivo pausado no aparece).
+  - Alertas reales de "llevas N días sin avanzar en este objetivo", calculadas desde la última vez que se estudió algo.
+  - El Pomodoro de Horario ahora también puede vincularse a un objetivo, no solo a una materia.
+  - El dashboard de Hoy ya muestra el progreso de tus objetivos activos y la siguiente tarea sugerida.
+  - Simplificación honesta: el gráfico de "evolución semanal" que pedía el prompt en Estadísticas se reemplazó por las cifras agregadas (esta semana / total / racha) — un gráfico de series de tiempo completo se puede agregar después si hace falta.
+
+Pendiente del prompt unificado: Personalizar panel (mostrar/ocultar secciones — la base de datos ya está lista desde la migración anterior) y el lector de PDF.
+
 ## Ronda de ajustes (sobre comentarios directos)
 
 - **Fondo personalizable de verdad**: además de imagen de fondo, ahora hay color de fondo sólido — 4 preestablecidos (gris claro, gris oscuro, negro suave, azul noche) o cualquier color propio. Las tarjetas y el texto se ajustan solos para seguir combinando y leyéndose bien.
@@ -56,6 +80,7 @@ En **SQL Editor**, ejecuta en orden los tres archivos de `supabase/migrations/`:
 2. `0002_topic_links.sql` — vínculo tema → nota / bloque de estudio.
 3. `0003_personalization.sql` — orden de widgets del dashboard.
 4. `0004_background_and_semester.sql` — color de fondo propio, semestre por materia.
+5. `0005_goals_promises_panel.sql` — Objetivos, Promesas, vínculos de sesión, personalizar panel.
 
 ### 3. Configura las variables de entorno
 
@@ -116,6 +141,7 @@ supabase/
   migrations/0002_topic_links.sql       → vínculo tema → nota / bloque de estudio
   migrations/0003_personalization.sql   → orden de widgets del dashboard
   migrations/0004_background_and_semester.sql → color de fondo propio, semestre por materia
+  migrations/0005_goals_promises_panel.sql → Objetivos, Promesas, personalizar panel
 ```
 
 ## Ideas para seguir puliendo (no son parte del prompt original)
