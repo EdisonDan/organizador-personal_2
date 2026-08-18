@@ -7,6 +7,11 @@ import {
   BookMarked,
   GraduationCap,
   Star,
+  Heart,
+  Gem,
+  Crown,
+  Sparkles,
+  Palette,
   Lock,
   type LucideIcon,
 } from "lucide-react";
@@ -22,6 +27,11 @@ const ICONS: Record<AchievementType, LucideIcon> = {
   review_master: BookMarked,
   subject_complete: GraduationCap,
   level_5: Star,
+  first_promise_completed: Heart,
+  five_promises_completed: Gem,
+  ten_promises_completed: Crown,
+  yearly_promise_completed: Sparkles,
+  creative_promise_completed: Palette,
 };
 
 export function AchievementGallery({ achievements }: { achievements: AchievementView[] }) {

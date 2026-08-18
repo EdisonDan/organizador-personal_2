@@ -18,6 +18,8 @@ export interface Profile {
   background_image_url: string | null;
   background_color: string | null;
   dashboard_widget_order: string[];
+  visible_sections: string[];
+  section_order: string[];
   points: number;
   level: number;
   current_global_streak: number;
@@ -123,6 +125,8 @@ export interface ScheduleBlock {
   subject_id: string | null;
   habit_id: string | null;
   topic_id: string | null;
+  goal_id: string | null;
+  goal_subtopic_id: string | null;
   color: string | null;
   created_at: string;
 }
@@ -132,6 +136,8 @@ export interface PomodoroSession {
   user_id: string;
   subject_id: string | null;
   schedule_block_id: string | null;
+  goal_id: string | null;
+  goal_subtopic_id: string | null;
   started_at: string;
   duration_minutes: number;
   completed: boolean;
@@ -184,4 +190,143 @@ export interface Achievement {
   user_id: string;
   achievement_type: string;
   unlocked_at: string;
+}
+
+// ---------------------------------------------------------------- Objetivos --
+
+export type GoalStatus = "active" | "paused" | "completed" | "archived";
+
+export interface Goal {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  color: string;
+  icon: string | null;
+  status: GoalStatus;
+  priority: number; // 1-3
+  start_date: string;
+  target_date: string | null;
+  initial_level: number | null;
+  target_level: number | null;
+  progress_pct: number;
+  primary_habit_id: string | null;
+  subject_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type SubtopicStatus = "no_iniciado" | "entendiendo" | "practicando" | "consolidado";
+
+export interface GoalSubtopic {
+  id: string;
+  goal_id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  sort_order: number;
+  difficulty: number | null;
+  status: SubtopicStatus;
+  progress_pct: number;
+  estimated_minutes: number | null;
+  invested_minutes: number;
+  last_studied_at: string | null;
+  next_review_at: string | null;
+  created_at: string;
+}
+
+export type GoalTaskType =
+  | "leer"
+  | "ver_recurso"
+  | "ejercicios"
+  | "resumir"
+  | "active_recall"
+  | "repasar"
+  | "practica_guiada"
+  | "mini_evaluacion"
+  | "proyecto";
+
+export interface GoalTask {
+  id: string;
+  goal_id: string;
+  user_id: string;
+  subtopic_id: string | null;
+  note_id: string | null;
+  resource_id: string | null;
+  title: string;
+  description: string | null;
+  task_type: GoalTaskType;
+  difficulty: number | null;
+  priority: number;
+  estimated_minutes: number | null;
+  completed: boolean;
+  suggested_date: string | null;
+  due_date: string | null;
+  counts_as_habit: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export type GoalResourceType = "pdf" | "link" | "video" | "other";
+
+export interface GoalResource {
+  id: string;
+  goal_id: string;
+  user_id: string;
+  subtopic_id: string | null;
+  title: string;
+  type: GoalResourceType;
+  url: string | null;
+  current_page: number;
+  page_count: number | null;
+  created_at: string;
+}
+
+export interface GoalReview {
+  id: string;
+  subtopic_id: string;
+  user_id: string;
+  last_reviewed_at: string | null;
+  next_review_at: string;
+  interval_stage: number;
+  created_at: string;
+}
+
+export interface GoalHabitLink {
+  id: string;
+  goal_id: string;
+  habit_id: string;
+  user_id: string;
+}
+
+export interface GoalNoteLink {
+  id: string;
+  goal_id: string;
+  note_id: string;
+  subtopic_id: string | null;
+  user_id: string;
+}
+
+// ----------------------------------------------------------------- Promesas --
+// Se llama "Promise_" (con guion bajo) para no chocar con el tipo global
+// Promise<T> de TypeScript/JavaScript.
+
+export type PromiseType = "yearly" | "change" | "creative" | "personal";
+export type PromiseStatus = "active" | "paused" | "completed" | "archived";
+
+export interface Promise_ {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  type: PromiseType;
+  status: PromiseStatus;
+  start_date: string;
+  completed_date: string | null;
+  ideas: string | null;
+  related_goal_id: string | null;
+  related_habit_id: string | null;
+  created_at: string;
+  updated_at: string;
 }

@@ -1,6 +1,7 @@
+import { Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getGlobalStats } from "@/lib/gamification/get-global-stats";
-import type { Profile } from "@/lib/types";
+import type { Profile, Promise_ } from "@/lib/types";
 
 export const metadata = { title: "Perfil · Panel Personal" };
 
@@ -10,9 +11,17 @@ export default async function ProfilePage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: profile }, stats] = await Promise.all([
+  const [{ data: profile }, stats, { data: lastPromise }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user!.id).maybeSingle<Profile>(),
     getGlobalStats(supabase, user!.id),
+    supabase
+      .from("promises")
+      .select("*")
+      .eq("user_id", user!.id)
+      .eq("status", "completed")
+      .order("completed_date", { ascending: false })
+      .limit(1)
+      .maybeSingle<Promise_>(),
   ]);
 
   const displayName = profile?.display_name || user?.email?.split("@")[0] || "";
@@ -57,8 +66,27 @@ export default async function ProfilePage() {
               {stats.longestStreak} días
             </dd>
           </div>
+          <div>
+            <dt className="text-muted-foreground">Promesas cumplidas</dt>
+            <dd className="tabular-stat mt-0.5 text-base font-semibold text-foreground">
+              {stats.counts.promisesCompleted}
+            </dd>
+          </div>
         </dl>
       </section>
+
+      {lastPromise && (
+        <section className="max-w-lg rounded-2xl border border-gold/30 bg-gold-soft p-5">
+          <p className="mb-1 flex items-center gap-1.5 text-xs font-medium text-gold">
+            <Sparkles className="h-3.5 w-3.5" />
+            Última promesa cumplida
+          </p>
+          <p className="text-sm font-medium text-foreground">{lastPromise.title}</p>
+          {lastPromise.completed_date && (
+            <p className="tabular-stat mt-0.5 text-xs text-muted-foreground">{lastPromise.completed_date}</p>
+          )}
+        </section>
+      )}
     </div>
   );
 }

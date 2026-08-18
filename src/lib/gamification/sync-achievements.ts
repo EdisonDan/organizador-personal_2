@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getGlobalStats } from "@/lib/gamification/get-global-stats";
-import { ACHIEVEMENT_DEFS, evaluateAchievements, type AchievementType } from "@/lib/gamification/achievements";
-import type { Subject, SubjectTopic, SubjectWeek } from "@/lib/types";
+import { ACHIEVEMENT_DEFS, evaluateAchievements, type AchievementType, type AchievementContext } from "@/lib/gamification/achievements";
+import type { Subject, SubjectTopic, SubjectWeek, Promise_ } from "@/lib/types";
 
 export interface AchievementView {
   type: AchievementType;
@@ -35,17 +35,37 @@ async function anySubjectAt100(supabase: SupabaseServerClient, userId: string): 
   return Array.from(bySubject.values()).some((s) => s.total > 0 && s.done === s.total);
 }
 
+async function getPromiseContext(
+  supabase: SupabaseServerClient,
+  userId: string
+): Promise<Pick<AchievementContext, "promisesCompletedCount" | "anyYearlyPromiseCompleted" | "anyCreativePromiseCompleted">> {
+  const { data: completed } = await supabase
+    .from("promises")
+    .select("type")
+    .eq("user_id", userId)
+    .eq("status", "completed")
+    .returns<Pick<Promise_, "type">[]>();
+
+  const rows = completed ?? [];
+  return {
+    promisesCompletedCount: rows.length,
+    anyYearlyPromiseCompleted: rows.some((p) => p.type === "yearly"),
+    anyCreativePromiseCompleted: rows.some((p) => p.type === "creative"),
+  };
+}
+
 /** Revisa los logros, guarda los nuevos que se hayan desbloqueado, y devuelve la galería completa. */
 export async function syncAndGetAchievements(userId: string): Promise<AchievementView[]> {
   const supabase = await createClient();
 
-  const [stats, subjectComplete, { data: existing }] = await Promise.all([
+  const [stats, subjectComplete, promiseContext, { data: existing }] = await Promise.all([
     getGlobalStats(supabase, userId),
     anySubjectAt100(supabase, userId),
+    getPromiseContext(supabase, userId),
     supabase.from("achievements").select("achievement_type, unlocked_at").eq("user_id", userId),
   ]);
 
-  const unlockedNow = evaluateAchievements(stats, subjectComplete);
+  const unlockedNow = evaluateAchievements(stats, { anySubjectComplete: subjectComplete, ...promiseContext });
   const existingTypes = new Map((existing ?? []).map((a) => [a.achievement_type, a.unlocked_at]));
 
   const toInsert = ACHIEVEMENT_DEFS.filter((def) => unlockedNow[def.type] && !existingTypes.has(def.type)).map(

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutGrid, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { mainNavItems, secondaryNavItems } from "./nav-items";
+import { primaryNavItems, utilityNavItems } from "./nav-items";
 import { useSidebarCollapsed } from "./use-sidebar-collapsed";
 
 export function Sidebar() {
@@ -27,13 +27,13 @@ export function Sidebar() {
 
       <nav className={cn("flex flex-1 flex-col justify-between px-3 pb-4", collapsed && "px-2")}>
         <div className="space-y-1">
-          {mainNavItems.map((item) => (
+          {primaryNavItems.map((item) => (
             <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} collapsed={collapsed} />
           ))}
         </div>
 
         <div className="space-y-1 border-t border-border pt-3">
-          {secondaryNavItems.map((item) => (
+          {utilityNavItems.map((item) => (
             <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} collapsed={collapsed} />
           ))}
         </div>

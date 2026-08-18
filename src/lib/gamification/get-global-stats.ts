@@ -15,6 +15,7 @@ export interface GlobalStats {
     pomodorosCompleted: number;
     topicsCompleted: number;
     notesReviewed: number;
+    promisesCompleted: number;
   };
 }
 
@@ -25,12 +26,14 @@ export interface GlobalStats {
  * A esta escala de datos (uso personal) el costo de recalcular es mínimo.
  */
 export async function getGlobalStats(supabase: SupabaseServerClient, userId: string): Promise<GlobalStats> {
-  const [{ data: habitLogs }, { data: pomodoros }, { data: reviews }, { data: topics }] = await Promise.all([
-    supabase.from("habit_logs").select("date").eq("user_id", userId).eq("completed", true),
-    supabase.from("pomodoro_sessions").select("started_at").eq("user_id", userId).eq("completed", true),
-    supabase.from("note_reviews").select("last_reviewed_at").eq("user_id", userId).not("last_reviewed_at", "is", null),
-    supabase.from("subject_topics").select("id").eq("user_id", userId).eq("completed", true),
-  ]);
+  const [{ data: habitLogs }, { data: pomodoros }, { data: reviews }, { data: topics }, { data: promises }] =
+    await Promise.all([
+      supabase.from("habit_logs").select("date").eq("user_id", userId).eq("completed", true),
+      supabase.from("pomodoro_sessions").select("started_at").eq("user_id", userId).eq("completed", true),
+      supabase.from("note_reviews").select("last_reviewed_at").eq("user_id", userId).not("last_reviewed_at", "is", null),
+      supabase.from("subject_topics").select("id").eq("user_id", userId).eq("completed", true),
+      supabase.from("promises").select("id").eq("user_id", userId).eq("status", "completed"),
+    ]);
 
   const activeDates = new Set<string>();
   const habitDates: string[] = (habitLogs ?? []).map((r: { date: string }) => r.date);
@@ -45,6 +48,7 @@ export async function getGlobalStats(supabase: SupabaseServerClient, userId: str
     pomodorosCompleted: (pomodoros ?? []).length,
     topicsCompleted: (topics ?? []).length,
     notesReviewed: (reviews ?? []).length,
+    promisesCompleted: (promises ?? []).length,
   };
   const points = calculatePoints(counts);
   const { level, pointsIntoLevel, pointsForNextLevel } = calculateLevel(points);

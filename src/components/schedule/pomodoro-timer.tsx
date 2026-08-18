@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Play, Pause, RotateCcw, Coffee, BookOpen } from "lucide-react";
 import { ProgressRing } from "@/components/habits/progress-ring";
 import { logPomodoroSession } from "@/app/(dashboard)/schedule/actions";
-import type { Subject } from "@/lib/types";
+import type { Subject, Goal } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 function playChime() {
@@ -30,10 +30,14 @@ function playChime() {
 
 export function PomodoroTimer({
   subjects,
+  goals = [],
+  initialGoalId = "",
   initialTodayCount,
   initialBySubject,
 }: {
   subjects: Subject[];
+  goals?: Goal[];
+  initialGoalId?: string;
   initialTodayCount: number;
   initialBySubject: { subjectId: string | null; subjectName: string; count: number }[];
 }) {
@@ -43,6 +47,7 @@ export function PomodoroTimer({
   const [secondsLeft, setSecondsLeft] = useState(workMin * 60);
   const [running, setRunning] = useState(false);
   const [subjectId, setSubjectId] = useState("");
+  const [goalId, setGoalId] = useState(initialGoalId);
   const [todayCount, setTodayCount] = useState(initialTodayCount);
   const [bySubject, setBySubject] = useState(initialBySubject);
 
@@ -66,6 +71,7 @@ export function PomodoroTimer({
       const subject = subjects.find((s) => s.id === subjectId);
       logPomodoroSession({
         subject_id: subjectId || null,
+        goal_id: goalId || null,
         schedule_block_id: null,
         started_at: startedAtRef.current ?? new Date().toISOString(),
         duration_minutes: workMin,
@@ -194,6 +200,22 @@ export function PomodoroTimer({
             {subjects.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
+              </option>
+            ))}
+          </select>
+        )}
+
+        {goals.length > 0 && (
+          <select
+            value={goalId}
+            onChange={(e) => setGoalId(e.target.value)}
+            disabled={running}
+            className="input w-full max-w-xs text-center text-sm disabled:opacity-60"
+          >
+            <option value="">Sin objetivo</option>
+            {goals.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.title}
               </option>
             ))}
           </select>
