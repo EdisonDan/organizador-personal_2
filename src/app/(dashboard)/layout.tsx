@@ -47,14 +47,14 @@ export default async function DashboardLayout({
         </>
       )}
       <div className="relative z-10 flex min-h-screen">
-        <Sidebar />
+        <Sidebar visibleSections={profile?.visible_sections ?? []} sectionOrder={profile?.section_order ?? []} />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar displayName={displayName} streak={stats.currentStreak} points={stats.points} />
           <main className="flex-1 px-4 pb-24 pt-6 md:px-8 md:pb-10">
             <div className="mx-auto w-full max-w-6xl">{children}</div>
           </main>
         </div>
-        <BottomNav />
+        <BottomNav visibleSections={profile?.visible_sections ?? []} sectionOrder={profile?.section_order ?? []} />
       </div>
     </PersonalizationProvider>
   );

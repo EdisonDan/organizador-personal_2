@@ -5,14 +5,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MoreHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { primaryNavItems, utilityNavItems, BOTTOM_NAV_VISIBLE_COUNT } from "./nav-items";
+import { ALWAYS_VISIBLE_ITEMS, getVisibleSections, BOTTOM_NAV_VISIBLE_COUNT } from "./nav-items";
 
-export function BottomNav() {
+export function BottomNav({
+  visibleSections,
+  sectionOrder,
+}: {
+  visibleSections: string[];
+  sectionOrder: string[];
+}) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const sections = getVisibleSections(visibleSections, sectionOrder);
 
-  const visible = primaryNavItems.slice(0, BOTTOM_NAV_VISIBLE_COUNT);
-  const overflow = [...primaryNavItems.slice(BOTTOM_NAV_VISIBLE_COUNT), ...utilityNavItems];
+  const visible = sections.slice(0, BOTTOM_NAV_VISIBLE_COUNT);
+  const overflow = [...sections.slice(BOTTOM_NAV_VISIBLE_COUNT), ...ALWAYS_VISIBLE_ITEMS];
   const overflowHasActive = overflow.some((item) => isActive(pathname, item.href));
 
   return (
@@ -35,17 +42,19 @@ export function BottomNav() {
             </Link>
           );
         })}
-        <button
-          type="button"
-          onClick={() => setMoreOpen(true)}
-          className={cn(
-            "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
-            overflowHasActive ? "text-primary" : "text-muted-foreground"
-          )}
-        >
-          <MoreHorizontal className="h-5 w-5" />
-          Más
-        </button>
+        {overflow.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setMoreOpen(true)}
+            className={cn(
+              "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
+              overflowHasActive ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            <MoreHorizontal className="h-5 w-5" />
+            Más
+          </button>
+        )}
       </nav>
 
       {moreOpen && (

@@ -46,7 +46,10 @@ Sobre `prompt-unificado-app.md`. Siguiendo el orden que pediste ahí mismo (base
   - El dashboard de Hoy ya muestra el progreso de tus objetivos activos y la siguiente tarea sugerida.
   - Simplificación honesta: el gráfico de "evolución semanal" que pedía el prompt en Estadísticas se reemplazó por las cifras agregadas (esta semana / total / racha) — un gráfico de series de tiempo completo se puede agregar después si hace falta.
 
-Pendiente del prompt unificado: Personalizar panel (mostrar/ocultar secciones — la base de datos ya está lista desde la migración anterior) y el lector de PDF.
+- **Personalizar panel, completo**: cada sección ocultable (Hoy, Hábitos, Horario, Notas, Materias, Objetivos, Promesas, Logros) tiene un switch en `Configuración > Personalizar panel`, con arrastrar y soltar para reordenar las visibles — igual que pedía la fase 2 del prompt, no quedó como "fase futura". Perfil y Configuración siempre quedan visibles, no se pueden ocultar. El sidebar y la barra inferior (con su menú "Más") respetan esta preferencia en tiempo real. Ocultar una sección nunca borra sus datos, solo la visibilidad — sigue accesible por URL directa y reaparece en cuanto se reactiva el switch.
+- **Lector de PDF (Fase 1), completo**: subir un PDF como recurso de un objetivo (a Supabase Storage), verlo dentro de la app con navegación por página y zoom, y la última página vista se guarda sola. Usa `react-pdf` con capa de texto/anotaciones desactivada — es una simplificación deliberada: la Fase 2 (resaltar texto, crear nota desde una selección) la pide el prompt como opcional y depende de esa capa, así que queda para una entrega futura si hace falta.
+
+Con esto, `prompt-unificado-app.md` está completo: los 4 módulos nuevos (Objetivos, Promesas, Personalizar panel, Logros ampliados) más el lector de PDF, integrados con lo que ya existía sin romper nada — confirmado con un build real en cada entrega, no solo generado y entregado a ciegas.
 
 ## Ronda de ajustes (sobre comentarios directos)
 
@@ -74,7 +77,7 @@ Pendiente del prompt unificado: Personalizar panel (mostrar/ocultar secciones �
 
 ### 2. Crea las tablas
 
-En **SQL Editor**, ejecuta en orden los tres archivos de `supabase/migrations/`:
+En **SQL Editor**, ejecuta en orden los cinco archivos de `supabase/migrations/`:
 
 1. `0001_init.sql` — esquema completo, RLS, bucket de Storage.
 2. `0002_topic_links.sql` — vínculo tema → nota / bloque de estudio.
@@ -122,15 +125,18 @@ src/
       schedule/                         → Módulo 2: grilla drag & drop, Pomodoro, entregas
       notes/                            → Módulo 3: editor Tiptap, tarjetas, repaso espaciado
       subjects/                         → Módulo 4: semanas, temas, vínculos, interleaving
+      goals/                            → Objetivos: subtemas, tareas, "qué estudiar hoy"
+      promises/                         → Promesas: tipos, cumplida, logros al momento
       achievements/                     → Gamificación: racha, puntos, nivel, insignias
-      profile/ settings/                → perfil y personalización + datos
+      profile/ settings/                → perfil, personalización, personalizar panel, datos
   components/
-    habits/ schedule/ notes/ subjects/ achievements/ settings/ dashboard/
-    layout/                             → Sidebar, BottomNav, TopBar
+    habits/ schedule/ notes/ subjects/ goals/ promises/ achievements/ settings/ dashboard/
+    goals/pdf-viewer.tsx                → lector de PDF (react-pdf), página/zoom/progreso
+    layout/                             → Sidebar, BottomNav, TopBar (secciones ocultables/ordenables)
     ui/                                 → EmptyState, ComingSoon, Dialog
-    personalization-provider.tsx        → aplica color de acento y tipografía en vivo
+    personalization-provider.tsx        → aplica color de acento, fondo y tipografía en vivo
   lib/
-    habits/ schedule/ notes/ subjects/ gamification/  → lógica de cada módulo
+    habits/ schedule/ notes/ subjects/ goals/ gamification/  → lógica de cada módulo
     storage.ts                          → subida de archivos a Supabase Storage
     color-utils.ts, theme-presets.ts    → personalización
     supabase/                           → clientes de Supabase (browser/server)

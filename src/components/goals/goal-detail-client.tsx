@@ -197,7 +197,7 @@ export function GoalDetailClient({
         <GoalNotesTab goal={goal} noteLinks={noteLinks} linkedNotesById={linkedNotesById} allNotes={allNotes} subtopics={subtopics} />
       )}
       {tab === "repasos" && <GoalReviewsTab goal={goal} subtopics={subtopics} reviews={reviews} />}
-      {tab === "recursos" && <GoalResourcesTab goal={goal} resources={resources} subtopics={subtopics} />}
+      {tab === "recursos" && <GoalResourcesTab goal={goal} resources={resources} subtopics={subtopics} userId={goal.user_id} />}
       {tab === "estadisticas" && (
         <GoalStatsTab subtopics={subtopics} tasks={tasks} reviews={reviews} pomodoroSessions={pomodoroSessions} />
       )}
