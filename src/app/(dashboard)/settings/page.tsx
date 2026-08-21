@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PersonalizationForm } from "@/components/settings/personalization-form";
+import { PanelPersonalizationForm } from "@/components/settings/panel-personalization-form";
 import { DataManagement } from "@/components/settings/data-management";
 import type { Profile } from "@/lib/types";
 
@@ -34,6 +35,11 @@ export default async function SettingsPage() {
           <ThemeToggle />
         </div>
       </section>
+
+      <PanelPersonalizationForm
+        initialVisible={profile?.visible_sections ?? []}
+        initialOrder={profile?.section_order ?? []}
+      />
 
       {profile && <PersonalizationForm userId={user!.id} profile={profile} />}
 

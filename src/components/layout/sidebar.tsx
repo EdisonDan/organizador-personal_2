@@ -4,12 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutGrid, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { primaryNavItems, utilityNavItems } from "./nav-items";
+import { ALWAYS_VISIBLE_ITEMS, getVisibleSections, type NavItem } from "./nav-items";
 import { useSidebarCollapsed } from "./use-sidebar-collapsed";
 
-export function Sidebar() {
+export function Sidebar({
+  visibleSections,
+  sectionOrder,
+}: {
+  visibleSections: string[];
+  sectionOrder: string[];
+}) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useSidebarCollapsed();
+  const sections = getVisibleSections(visibleSections, sectionOrder);
 
   return (
     <aside
@@ -27,13 +34,13 @@ export function Sidebar() {
 
       <nav className={cn("flex flex-1 flex-col justify-between px-3 pb-4", collapsed && "px-2")}>
         <div className="space-y-1">
-          {primaryNavItems.map((item) => (
+          {sections.map((item) => (
             <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} collapsed={collapsed} />
           ))}
         </div>
 
         <div className="space-y-1 border-t border-border pt-3">
-          {utilityNavItems.map((item) => (
+          {ALWAYS_VISIBLE_ITEMS.map((item) => (
             <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} collapsed={collapsed} />
           ))}
         </div>
@@ -55,15 +62,7 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-function NavLink({
-  item,
-  active,
-  collapsed,
-}: {
-  item: { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
-  active: boolean;
-  collapsed: boolean;
-}) {
+function NavLink({ item, active, collapsed }: { item: NavItem; active: boolean; collapsed: boolean }) {
   const Icon = item.icon;
   return (
     <Link

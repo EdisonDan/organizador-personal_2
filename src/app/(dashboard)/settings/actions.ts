@@ -24,6 +24,8 @@ export interface PreferencesInput {
   week_start_day?: number;
   date_format?: string;
   dashboard_widget_order?: string[];
+  visible_sections?: string[];
+  section_order?: string[];
 }
 
 export async function updatePreferences(input: PreferencesInput) {
